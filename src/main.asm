@@ -1,6 +1,7 @@
 ; iNES Header
+.include "point.asm"
+.include "meta_sprite.asm"
 .include "header.asm"
-
 ; =============================
 ; Zero-page and main RAM
 ; Variables, flags, etc.
@@ -19,6 +20,8 @@ pad_1:		.res 1
 pad_1_prev:	.res 1
 pad_2:		.res 1
 pad_2_prev:	.res 1
+camera: .tag Point		; $0c
+hero: .tag MSprite
 
 .segment "RAM"
 ; Flags for PPU control
@@ -27,6 +30,7 @@ ppuctrl_config:	.res 1
 vblank_flag:	.res 1
 xscroll:	.res 2
 yscroll:	.res 2
+
 
 ; Some useful macros
 .include "cool_macros.asm"
@@ -117,8 +121,13 @@ reset_vector:
 	sta $500, x
 	sta $600, x
 
+
 	inx
 	bne @clrmem
+
+	; initailze variables
+	Point_init camera, #128, #128
+	MSprite_init hero, hero_data, #22, #25
 
 ; One more vblank
 @waitvbl2:
@@ -188,9 +197,27 @@ main_entry:
 main_top_loop:
 
 	; Run game logic here
+	jsr read_joy_safe
+	
+	key_down pad_1, #BUTTON_RIGHT
+	MSprite_point_right hero
+	MSprite_set_x_vector hero, $01
+
+:	key_up pad_1, #BUTTON_RIGHT
+	MSprite_set_x_vector hero, $00
+
+:	key_down pad_1, #BUTTON_LEFT
+	MSprite_point_left hero
+	MSprite_set_x_vector hero, $02
+
+:	key_up pad_1, #BUTTON_LEFT
+	MSprite_set_x_vector hero, $00
+
+:	MSprite_apply_vector hero
+
 
 	; End of game logic frame; wait for NMI (vblank) to begin
-	jsr wait_nmi
+: jsr wait_nmi
 
 	; Commit VRAM updates while PPU is disabled in vblank
 	;ppu_disable
@@ -218,6 +245,9 @@ sample_palette_data:
 	.byte	$0F, $01, $23, $30
 	; For a large project, palette data like this is often separated
 	; into a separate file and .incbin'd in, just like the other data.
+
+hero_data:
+		.byte $00, $00
 
 ; These are needed to boot the NES.
 .segment "VECTORS"

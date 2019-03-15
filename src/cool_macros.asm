@@ -108,35 +108,35 @@ OAM_BASE		= $200
 
 ; Check if a button is held; branch to :+ if not
 .macro key_isdown pad, btn_comp
-	lda pad
-	bit btn_comp
+	lda btn_comp
+	bit pad
 	beq :+
 .endmacro
 
 ; Check if a button is up; branch to :+ if not
 .macro key_isup pad, btn_comp
-	lda pad
-	bit btn_comp
+	lda btn_comp
+	bit pad
 	bne :+
 .endmacro
 
 ; Check if a button has just been pressed; branch to :+ if not
 .macro key_down pad, btn_comp
-	lda pad
-	bit btn_comp
+	lda btn_comp
+	bit pad
 	beq :+
-	lda pad+1 ;pad_prev
-	bit btn_comp
+	lda btn_comp
+	bit pad+1 ;pad_prev
 	bne :+
 .endmacro
 
 ; Check if a button has just been released; branch to :+ if not
 .macro key_up pad, btn_comp
-	lda pad
-	bit btn_comp
+	lda btn_comp
+	bit pad
 	bne:+
-	lda pad+1 ; pad_prev
-	bit btn_comp
+	lda btn_comp
+	bit pad+1 ; pad_prev
 	beq :+
 .endmacro
 

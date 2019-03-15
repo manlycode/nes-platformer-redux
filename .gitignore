@@ -12,3 +12,4 @@ src/*.swp
 *.cdl
 labels.txt
 tools/fceux/fcs/*
+tools

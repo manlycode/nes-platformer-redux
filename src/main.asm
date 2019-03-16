@@ -201,17 +201,17 @@ main_top_loop:
 	
 	key_down pad_1, #BUTTON_RIGHT
 	MSprite_point_right hero
-	MSprite_set_x_vector hero, $01
+	MSprite_set_x_vector hero, #1
 
 :	key_up pad_1, #BUTTON_RIGHT
-	MSprite_set_x_vector hero, $00
+	MSprite_set_x_vector hero, #0
 
 :	key_down pad_1, #BUTTON_LEFT
 	MSprite_point_left hero
-	MSprite_set_x_vector hero, $02
+	MSprite_set_x_vector hero, #<-2
 
 :	key_up pad_1, #BUTTON_LEFT
-	MSprite_set_x_vector hero, $00
+	MSprite_set_x_vector hero, #0
 
 :	MSprite_apply_vector hero
 

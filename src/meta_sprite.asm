@@ -1,8 +1,7 @@
 .struct MSprite
 	status .byte
 	pos .tag Point
-	x_vector .byte
-	y_vector .byte
+	vector .tag Point
 	frame_addr .addr
 .endstruct
 
@@ -14,10 +13,7 @@ MS_STATUS_UP		= %00000010
 .macro MSprite_init sprite, frame, xPos, yPos
 	MSprite_point_right sprite
 	Point_init sprite+MSprite::pos, xPos, yPos
-
-	lda #00
-	sta sprite+MSprite::x_vector
-	sta sprite+MSprite::y_vector
+	Point_init sprite+MSprite::vector, #0, #0
 .endmacro
 
 .macro MSprite_point_right sprite
@@ -45,16 +41,9 @@ MS_STATUS_UP		= %00000010
 .endmacro
 
 .macro MSprite_set_x_vector sprite, newVec
-	lda #newVec
-	sta sprite+MSprite::x_vector
+	Point_set_x sprite+MSprite::vector, newVec
 .endmacro
 
 .macro MSprite_apply_vector sprite
-	lda sprite+MSprite::x_vector
-	beq :++
-	lda #MS_STATUS_RIGHT
-	bit sprite+MSprite::status
-	bne :+
-	Point_move_left sprite+MSprite::pos, sprite+MSprite::x_vector
-: Point_move_right sprite+MSprite::pos, sprite+MSprite::x_vector
+	Point_apply_vector sprite+MSprite::pos, sprite+MSprite::vector
 .endmacro

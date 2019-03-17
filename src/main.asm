@@ -23,8 +23,11 @@ pad_1_prev:	.res 1
 pad_2:		.res 1
 pad_2_prev:	.res 1
 camera: .tag Point		; $0c
+
 hero: .tag MSprite
 hero2: .tag MSprite
+hero3: .tag MSprite
+
 oam_pointer: .res 2
 msprite_pointer: .res 2
 tile_pointer: .res 2
@@ -151,6 +154,7 @@ reset_vector:
 	Point_init camera, #128, #128
 	MSprite_init hero, hero_right_pointers, #128, #128
 	MSprite_init hero2, hero_right_pointers, #32, #35
+	MSprite_init hero3, hero_right_pointers, #52, #130
 
 ; One more vblank
 @waitvbl2:
@@ -252,6 +256,10 @@ main_top_loop:
 	jsr load_oam
 
 	load_pointer hero2, msprite_pointer
+	load_pointer_from_table hero_right_pointers, 1, tile_pointer
+	jsr load_oam
+
+	load_pointer hero3, msprite_pointer
 	load_pointer_from_table hero_right_pointers, 1, tile_pointer
 	jsr load_oam
 

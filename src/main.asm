@@ -239,7 +239,7 @@ main_top_loop:
 
 ; The sample graphics resources.
 sample_chr_data:
-	.incbin "resources/chr.chr"
+	.incbin "resources/bin/bg-and-sprite.chr"
 
 sample_palette_data:
 	.byte	$0F, $01, $23, $30

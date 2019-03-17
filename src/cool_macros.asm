@@ -9,6 +9,8 @@ PPUDATA			= $2007
 OAMDMA			= $4014
 DMCFREQ			= $4010
 
+OAM_FLIP_H = $40
+
 ; A button comparison table for reading joypads
 BUTTON_A		= %10000000
 BUTTON_B		= %01000000

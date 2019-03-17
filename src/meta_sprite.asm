@@ -2,7 +2,7 @@
 	status .byte
 	pos .tag Point
 	vector .tag Point
-	frame_addr .addr
+	frame_table .addr
 .endstruct
 
 MS_TILE_SIZE = 8
@@ -10,10 +10,15 @@ MS_STATUS_RIGHT = %00000001
 MS_STATUS_UP		= %00000010
 
 
-.macro MSprite_init sprite, frame, xPos, yPos
+.macro MSprite_init sprite, fr_table, xPos, yPos
 	MSprite_point_right sprite
 	Point_init sprite+MSprite::pos, xPos, yPos
 	Point_init sprite+MSprite::vector, #0, #0
+
+	lda #<fr_table
+	sta sprite+MSprite::frame_table
+	lda #>fr_table
+	sta sprite+MSprite::frame_table+1
 .endmacro
 
 .macro MSprite_point_right sprite

@@ -16,15 +16,21 @@ temp5:		.res 1
 temp6:		.res 1
 temp7:		.res 1
 temp8:		.res 1
+temp_x:		.res 1
+temp_y:		.res 1
 pad_1:		.res 1
 pad_1_prev:	.res 1
 pad_2:		.res 1
 pad_2_prev:	.res 1
 camera: .tag Point		; $0c
 hero: .tag MSprite
+hero2: .tag MSprite
+oam_pointer: .res 2
+msprite_pointer: .res 2
+tile_pointer: .res 2
 
 .segment "OAM"
-oam: .res $100
+oam: .res 256
 
 .segment "RAM"
 ; Flags for PPU control
@@ -37,6 +43,7 @@ yscroll:	.res 2
 
 ; Some useful macros
 .include "cool_macros.asm"
+.include "pointer_macros.asm"
 
 ; ============================
 ; PRG bank F
@@ -47,6 +54,13 @@ yscroll:	.res 2
 ; ============================
 .segment "BANKF"
 .include "utils.asm"
+
+write_ms_to_oam:
+	ldy $0
+write_ms_to_oam_loop:
+
+write_ms_to_oam_finish:
+	rts
 
 ; ============================
 ; NMI ISR
@@ -129,8 +143,14 @@ reset_vector:
 	bne @clrmem
 
 	; initailze variables
+	ldx #$00
+	stx oam_pointer
+	ldx #$02
+	stx oam_pointer+1
+
 	Point_init camera, #128, #128
-	MSprite_init hero, hero_data, #22, #25
+	MSprite_init hero, hero_right_pointers, #128, #128
+	MSprite_init hero2, hero_right_pointers, #32, #35
 
 ; One more vblank
 @waitvbl2:
@@ -139,7 +159,7 @@ reset_vector:
 	bne @waitvbl2
 
 ; PPU configuration for actual use
-	ldx #%10001000		; Nominal PPUCTRL settings:
+	ldx #%10001011		; Nominal PPUCTRL settings:
 				; NMI enable
 				; Slave mode (don't change this!)
 				; 8x8 sprites
@@ -184,6 +204,7 @@ main_entry:
 
 	; Load in a palette
 	ppu_load_bg_palette sample_palette_data
+	ppu_load_spr_palette sample_palette_data
 	
 	; Load in CHR tiles to VRAM for BG
 	; Remember, BG data starts at $0000 - we must specify the upper byte of
@@ -198,6 +219,13 @@ main_entry:
 	ppu_enable
 
 main_top_loop:
+	bit OAMADDR
+	ldx #$00
+	stx OAMADDR
+
+	bit OAMDMA
+	ldx #$02
+	stx OAMDMA
 
 	; Run game logic here
 	jsr read_joy_safe
@@ -218,9 +246,18 @@ main_top_loop:
 
 :	MSprite_apply_vector hero
 
+	load_pointer $0200, oam_pointer
+	load_pointer hero, msprite_pointer
+	load_pointer_from_table hero_right_pointers, 0, tile_pointer
+	jsr load_oam
+
+	load_pointer hero2, msprite_pointer
+	load_pointer_from_table hero_right_pointers, 1, tile_pointer
+	jsr load_oam
+
 
 	; End of game logic frame; wait for NMI (vblank) to begin
-: jsr wait_nmi
+:	jsr wait_nmi
 
 	; Commit VRAM updates while PPU is disabled in vblank
 	;ppu_disable
@@ -228,6 +265,49 @@ main_top_loop:
 	; Re-enable PPU for the start of a new frame
 	;ppu_enable
 	jmp main_top_loop; loop forever
+
+load_oam:
+	ldy #MSprite::pos
+	lda (msprite_pointer), y
+	sta temp_x
+
+	ldy #MSprite::pos+1
+	lda (msprite_pointer), y
+	sta temp_y
+
+	ldy #0
+loop_load_oam:
+	clc
+	clv
+	lda (tile_pointer), y
+	cmp #128
+	beq end_load_oam
+	clc
+	clv
+	adc	temp_y
+	sta (oam_pointer), y
+	iny
+
+	lda (tile_pointer), y
+	sta (oam_pointer), y
+	iny
+
+	lda (tile_pointer), y
+	sta (oam_pointer), y
+	iny
+
+	lda (tile_pointer), y
+	clc
+	clv
+	adc temp_x
+	sta (oam_pointer), y
+	iny
+
+	jmp loop_load_oam
+end_load_oam:
+	inc_pointer_by_y tile_pointer 
+:	inc_pointer_by_y oam_pointer
+:	rts
 
 ; While our main code is in Bank F, the simple palette data (colors),
 ; CHR data (graphics), and Nametable data (layout) is located in another
@@ -242,15 +322,41 @@ sample_chr_data:
 	.incbin "resources/bin/bg-and-sprite.chr"
 
 sample_palette_data:
-	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
+	.incbin "resources/bin/palettes.pal"
 	; For a large project, palette data like this is often separated
 	; into a separate file and .incbin'd in, just like the other data.
+	;
+title_screen:
+	.incbin "resources/bin/pipes-stones.nam"
 
-hero_data:
-		.byte $00, $00
+hero_right_0_data:
+	.byte -24, $00, 3, -24
+	.byte -24, $01, 3, -16
+	.byte -24, $02, 3, -8
+	.byte -16, $03, 3, -24
+	.byte -16, $04, 3, -16
+	.byte -16, $05, 3, -8
+	.byte -8,  $06, 3, -24
+	.byte -8,  $07, 3, -16
+	.byte -8,  $08, 3, -8
+	.byte 128
+
+hero_right_1_data:
+	.byte -24, $00, 2, -24
+	.byte -24, $01, 2, -16
+	.byte -24, $02, 2, -8
+	.byte -16, $03, 2, -24
+	.byte -16, $04, 2, -16
+	.byte -16, $05, 2, -8
+	.byte -8,  $06, 2, -24
+	.byte -8,  $07, 2, -16
+	.byte -8,  $08, 2, -8
+	.byte 128
+
+hero_right_pointers:
+	.word hero_right_0_data
+	.word hero_right_1_data
+
 
 ; These are needed to boot the NES.
 .segment "VECTORS"

@@ -25,7 +25,7 @@ clean:
 	rm -f main.nes main.o $(LISTNAME) $(LABELSNAME) $(MAPNAME)
 
 $(EXECUTABLE):
-	$(AS) $(SRCDIR)/$(TOPLEVEL) $(ASFLAGS) -v -I $(SRCDIR) -l $(LISTNAME) -o $(OBJNAME)
+	$(AS) $(SRCDIR)/$(TOPLEVEL) $(ASFLAGS) -v -I $(SRCDIR) -l $(LISTNAME) -o $(OBJNAME) --feature force_range
 	$(LD) $(LDFLAGS) -C $(CONFIGNAME) -o $(EXECUTABLE) -m $(MAPNAME) -vm $(OBJNAME)
 
 run: $(EXECUTABLE)

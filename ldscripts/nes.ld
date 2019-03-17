@@ -33,6 +33,7 @@ MEMORY
 SEGMENTS 
 {
     ZEROPAGE:   load = ZEROPAGE, type=zp;
+    OAM:        load = OAM, type=bss, define = yes, align = $200;
     RAM:        load = RAM, type=bss, define = yes, align = $100;
 
     HEADER:     load = HEADER;

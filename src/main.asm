@@ -23,6 +23,9 @@ pad_2_prev:	.res 1
 camera: .tag Point		; $0c
 hero: .tag MSprite
 
+.segment "OAM"
+oam: .res $100
+
 .segment "RAM"
 ; Flags for PPU control
 ppumask_config:	.res 1

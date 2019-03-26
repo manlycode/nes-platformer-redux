@@ -73,6 +73,8 @@ tools/nesst/nesst.exe: tools/nesst
 	open tools
 
 
+
+
 .PHONY: bootstrap
 bootstrap: tools/fceux/fceux.exe tools/nesst/nesst.exe
 

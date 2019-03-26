@@ -15,11 +15,14 @@
         sta destination+1
 .endmacro
 
-.macro inc_pointer var_label
+.macro inc_pointer addr
+.proc
         clc
-        inc var_label
+        inc addr
         bne :+
-        inc var_label+1
+        inc addr+1
+Skip:
+.endproc
 .endmacro
 
 .macro inc_pointer_by_y var_label

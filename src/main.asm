@@ -1,6 +1,6 @@
 ; iNES Header
 .include "point.asm"
-.include "meta_sprite.asm"
+.include "meta_sprite_macros.asm"
 .include "header.asm"
 ; =============================
 ; Zero-page and main RAM
@@ -152,9 +152,10 @@ reset_vector:
 	stx oam_pointer+1
 
 	Point_init camera, #128, #128
-	MSprite_init hero, hero_right_pointers, #128, #128
-	MSprite_init hero2, hero_right_pointers, #32, #35
-	MSprite_init hero3, hero_right_pointers, #52, #130
+	MSprite_init hero, hero_right_pointers, #128, #128, #0, #0
+	MSprite_init hero2, hero_right_pointers, #32, #35, #1, #1
+	MSprite_init hero3, hero_right_pointers, #52, #130, #1, #0
+
 
 ; One more vblank
 @waitvbl2:
@@ -249,6 +250,8 @@ main_top_loop:
 	MSprite_set_x_vector hero, #0
 
 :	MSprite_apply_vector hero
+	MSprite_apply_vector hero2
+  MSprite_apply_vector hero3
 
 	load_pointer $0200, oam_pointer
 	load_pointer hero, msprite_pointer
@@ -265,7 +268,7 @@ main_top_loop:
 
 
 	; End of game logic frame; wait for NMI (vblank) to begin
-:	jsr wait_nmi
+	jsr wait_nmi
 
 	; Commit VRAM updates while PPU is disabled in vblank
 	;ppu_disable
@@ -273,6 +276,9 @@ main_top_loop:
 	; Re-enable PPU for the start of a new frame
 	;ppu_enable
 	jmp main_top_loop; loop forever
+
+
+.include "meta_sprite.asm"
 
 load_oam:
 	ldy #MSprite::pos

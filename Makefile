@@ -37,6 +37,9 @@ edit-tiles:
 	wine tools/nesst/NESst.exe ./$(EXECUTABLE)
 	# wine tools/yy-chr20120407_en/yychr.exe
 
+.PHONY: edit-music
+edit-music:
+	wine tools/FamiTracker-v0/FamiTracker.exe
 	
 debug: $(EXECUTABLE)
 	wine tools/fceuxw/fceux.exe ./$(EXECUTABLE)

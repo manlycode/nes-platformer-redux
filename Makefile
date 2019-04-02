@@ -41,10 +41,15 @@ edit-tiles:
 edit-music:
 	wine tools/FamiTracker-v0/FamiTracker.exe
 	
-debug: $(EXECUTABLE)
-	wine tools/fceuxw/fceux.exe ./$(EXECUTABLE)
+.PHONY: nintaco
+nintaco:
+	java -jar tools/nintaco/Nintaco.jar &
 
-
+.PHONY: test
+test: nintaco
+	echo "NOTE: Start the Program Server!!!!"
+	busted
+	
 tools:
 	mkdir tools
 
@@ -74,9 +79,6 @@ tools/nesst/nesst.exe: tools/nesst
 	open $(TEMPDIR)
 	cd $< && unzip $(TEMPDIR)/nesst.zip
 	open tools
-
-
-
 
 .PHONY: bootstrap
 bootstrap: tools/fceux/fceux.exe tools/nesst/nesst.exe
